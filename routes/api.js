@@ -22,6 +22,7 @@ router.post('/', function(req, res, next) {
 
       parser.parseString(xml, function(err, result) {
         var json = {
+          status: 200,
           total: 0,
           episodes: []
         };
