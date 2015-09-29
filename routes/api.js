@@ -30,14 +30,48 @@ router.post('/', function(req, res, next) {
         json.total = result.rss.channel[0].item.length; 
         
         for(var i = 0; i < json.total; i++) {
-          json.episodes[i] = {
-            title: result.rss.channel[0].item[i].title[0],
-            description: result.rss.channel[0].item[i].description[0],
-            date: result.rss.channel[0].item[i].pubDate[0],
-            duration: result.rss.channel[0].item[0]['itunes:duration'][0],
-            mp3: result.rss.channel[0].item[0]['enclosure'][0].$.url,
-            size: result.rss.channel[0].item[0]['enclosure'][0].$.length
-          };
+          episode = {
+            title: '',
+            description: '',
+            date: '',
+            duration: '',
+            mp3: '',
+            size: ''
+          }
+
+          if(result.rss.channel[0].item[i].title != 'undefined') {
+            episode.title = result.rss.channel[0].item[i].title[0];
+          } else {
+            episode.title = null;
+          }
+
+          if(result.rss.channel[0].item[i].description != 'undefined') {
+            episode.description = result.rss.channel[0].item[i].description[0];
+          } else {
+            episode.description = null;
+          }
+
+          if(result.rss.channel[0].item[i].pubDate != 'undefined') {
+            episode.date = result.rss.channel[0].item[i].pubDate[0];
+          } else {
+            episode.date = null;
+          }
+
+          if(result.rss.channel[0].item[i]['itunes:duration']) {
+            episode.duration = result.rss.channel[0].item[i]['itunes:duration'][0];
+          } else {
+            episode.duration = null;
+          }
+
+          if(result.rss.channel[0].item[i]['enclosure']) {
+            episode.mp3 = result.rss.channel[0].item[i]['enclosure'][0].$.url;
+            episode.size = result.rss.channel[0].item[i]['enclosure'][0].$.length;
+          } else {
+            episode.mp3 = null;
+            episode.size = null;
+          }
+
+          json.episodes[i] = episode;
         }
 
         res.setHeader('Content-Type', 'application/json');
