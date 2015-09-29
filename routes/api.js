@@ -39,19 +39,19 @@ router.post('/', function(req, res, next) {
             size: ''
           }
 
-          if(result.rss.channel[0].item[i].title != 'undefined') {
+          if(result.rss.channel[0].item[i].title) {
             episode.title = result.rss.channel[0].item[i].title[0];
           } else {
             episode.title = null;
           }
 
-          if(result.rss.channel[0].item[i].description != 'undefined') {
+          if(result.rss.channel[0].item[i].description) {
             episode.description = result.rss.channel[0].item[i].description[0];
           } else {
             episode.description = null;
           }
 
-          if(result.rss.channel[0].item[i].pubDate != 'undefined') {
+          if(result.rss.channel[0].item[i].pubDate) {
             episode.date = result.rss.channel[0].item[i].pubDate[0];
           } else {
             episode.date = null;
@@ -64,11 +64,17 @@ router.post('/', function(req, res, next) {
           }
 
           if(result.rss.channel[0].item[i]['enclosure']) {
-            episode.mp3 = result.rss.channel[0].item[i]['enclosure'][0].$.url;
-            episode.size = result.rss.channel[0].item[i]['enclosure'][0].$.length;
-          } else {
-            episode.mp3 = null;
-            episode.size = null;
+            if(result.rss.channel[0].item[i]['enclosure'][0].$.url) {
+              episode.mp3 = result.rss.channel[0].item[i]['enclosure'][0].$.url;
+            } else {
+              episode.mp3 = null;
+            }
+
+            if(result.rss.channel[0].item[i]['enclosure'][0].$.length) {
+              episode.size = result.rss.channel[0].item[i]['enclosure'][0].$.length;
+            } else {
+              episode.size = '0';
+            }
           }
 
           json.episodes[i] = episode;
