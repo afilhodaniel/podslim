@@ -27,57 +27,59 @@ router.post('/', function(req, res, next) {
           episodes: []
         };
 
-        json.total = result.rss.channel[0].item.length; 
-        
-        for(var i = 0; i < json.total; i++) {
-          episode = {
-            title: '',
-            description: '',
-            date: '',
-            duration: '',
-            mp3: '',
-            size: ''
-          }
-
-          if(result.rss.channel[0].item[i].title) {
-            episode.title = result.rss.channel[0].item[i].title[0];
-          } else {
-            episode.title = null;
-          }
-
-          if(result.rss.channel[0].item[i].description) {
-            episode.description = result.rss.channel[0].item[i].description[0];
-          } else {
-            episode.description = null;
-          }
-
-          if(result.rss.channel[0].item[i].pubDate) {
-            episode.date = result.rss.channel[0].item[i].pubDate[0];
-          } else {
-            episode.date = null;
-          }
-
-          if(result.rss.channel[0].item[i]['itunes:duration']) {
-            episode.duration = result.rss.channel[0].item[i]['itunes:duration'][0];
-          } else {
-            episode.duration = null;
-          }
-
-          if(result.rss.channel[0].item[i]['enclosure']) {
-            if(result.rss.channel[0].item[i]['enclosure'][0].$.url) {
-              episode.mp3 = result.rss.channel[0].item[i]['enclosure'][0].$.url;
-            } else {
-              episode.mp3 = null;
+        if(result.rss.channel[0].item) {
+          json.total = result.rss.channel[0].item.length; 
+          
+          for(var i = 0; i < json.total; i++) {
+            episode = {
+              title: '',
+              description: '',
+              date: '',
+              duration: '',
+              mp3: '',
+              size: ''
             }
 
-            if(result.rss.channel[0].item[i]['enclosure'][0].$.length) {
-              episode.size = result.rss.channel[0].item[i]['enclosure'][0].$.length;
+            if(result.rss.channel[0].item[i].title) {
+              episode.title = result.rss.channel[0].item[i].title[0];
             } else {
-              episode.size = '0';
+              episode.title = null;
             }
-          }
 
-          json.episodes[i] = episode;
+            if(result.rss.channel[0].item[i].description) {
+              episode.description = result.rss.channel[0].item[i].description[0];
+            } else {
+              episode.description = null;
+            }
+
+            if(result.rss.channel[0].item[i].pubDate) {
+              episode.date = result.rss.channel[0].item[i].pubDate[0];
+            } else {
+              episode.date = null;
+            }
+
+            if(result.rss.channel[0].item[i]['itunes:duration']) {
+              episode.duration = result.rss.channel[0].item[i]['itunes:duration'][0];
+            } else {
+              episode.duration = null;
+            }
+
+            if(result.rss.channel[0].item[i]['enclosure']) {
+              if(result.rss.channel[0].item[i]['enclosure'][0].$.url) {
+                episode.mp3 = result.rss.channel[0].item[i]['enclosure'][0].$.url;
+              } else {
+                episode.mp3 = null;
+              }
+
+              if(result.rss.channel[0].item[i]['enclosure'][0].$.length) {
+                episode.size = result.rss.channel[0].item[i]['enclosure'][0].$.length;
+              } else {
+                episode.size = '0';
+              }
+            }
+
+            json.episodes[i] = episode;
+          }
         }
 
         res.setHeader('Content-Type', 'application/json');
