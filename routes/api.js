@@ -71,7 +71,7 @@ router.get('/podcast/:country/:id', function(req, res, next) {
     var body = JSON.parse(result.getBody());
 
     if(body.resultCount && body.resultCount > 0) {
-      json.id = body.results[0].id;
+      json.id = body.results[0].collectionId;
       json.thumb = body.results[0].artworkUrl60;
       json.name = body.results[0].collectionName;
       json.author = body.results[0].artistName;
