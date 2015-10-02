@@ -24,11 +24,19 @@ router.post('/', function(req, res, next) {
         var json = {
           status: 200,
           total: 0,
+          last_release: '',
           episodes: []
         };
 
         if(result.rss.channel[0].item) {
           json.total = result.rss.channel[0].item.length; 
+
+          if(result.rss.channel[0].item[0].pubDate[0]) {
+            var date = new Date(result.rss.channel[0].item[0].pubDate[0]);
+            json.last_release = date.getTime();
+          } else {
+            json.last_release = null;
+          }
           
           for(var i = 0; i < json.total; i++) {
             episode = {
@@ -76,9 +84,48 @@ router.post('/', function(req, res, next) {
               } else {
                 episode.size = '0';
               }
+            } else {
+              episode.mp3 = null;
+              episode.size = '0';
             }
 
             json.episodes[i] = episode;
+          }
+        }
+
+        res.setHeader('Content-Type', 'application/json');
+
+        res.send(json);
+      });
+    });
+  });
+});
+
+router.post('/last_release', function(req, res, next) {
+  var url = req.body.url.replace('https', 'http');
+
+  http.get(url, function(response) {
+    var xml = '';
+
+    response.on('data', function(data) {
+      xml += data;
+    });
+
+    response.on('end', function() {
+      var parser = new xml2js.Parser();
+
+      parser.parseString(xml, function(err, result) {
+        var json = {
+          status: 200,
+          last_release: ''
+        };
+
+        if(result.rss.channel[0].item) {
+          if(result.rss.channel[0].item[0].pubDate[0]) {
+            var date = new Date(result.rss.channel[0].item[0].pubDate[0]);
+            json.last_release = date.getTime();
+          } else {
+            json.last_release = null;
           }
         }
 
