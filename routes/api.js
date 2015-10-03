@@ -140,6 +140,10 @@ router.get('/podcast/:country/:id', function(req, res, next) {
             }
 
             if(json.episodes.length > 0) {
+              json.episodes = json.episodes.filter(function(episode) {
+                return episode != null;
+              });
+
               json.total = json.episodes.length;
               json.release = json.episodes[0].date;
             }
