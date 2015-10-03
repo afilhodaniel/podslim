@@ -165,6 +165,64 @@ router.get('/podcast/:country/:id', function(req, res, next) {
   res.send(json);
 });
 
+router.get('/podcast_feed/:id', function(req, res, next) {
+  var url = 'https://itunes.apple.com/lookup?id=' + req.params.id;
+
+  var json = {
+    status: 200,
+    feed: null
+  };
+
+  var result = request('GET', url);
+
+  if(result.statusCode == 200) {
+    var body = JSON.parse(result.getBody());
+
+    if(body.resultCount && body.resultCount > 0) {
+      json.feed = body.results[0].feedUrl;
+    } else {
+      json = {
+        status: 400
+      };
+    }
+  } else {
+    json = {
+      status: 400
+    };
+  }
+
+  res.setHeader('Content-Type', 'application/json');
+  res.send(json);
+});
+
+router.post('/podcast_release', function(req, res, next) {
+  var json = {
+    status: 200,
+    release: null
+  };
+
+  var result = request('GET', req.body.url);
+
+  if(result.statusCode == 200) {
+    new xml2js.Parser().parseString(result.getBody(), function(err, xml) {
+      if(xml && xml.rss && xml.rss.channel && xml.rss.channel.length > 0) {
+        if(xml.rss.channel[0].item && xml.rss.channel[0].item.length > 0) {
+          if(xml.rss.channel[0].item[0].pubDate) {
+            json.release = new Date(xml.rss.channel[0].item[0].pubDate[0]).getTime();
+          }
+        }
+      }
+    });
+  } else {
+    json = {
+      status: 400
+    };
+  }
+
+  res.setHeader('Content-Type', 'application/json');
+  res.send(json);
+});
+
 router.post('/', function(req, res, next) {
   var url = req.body.url.replace('https', 'http');
 
