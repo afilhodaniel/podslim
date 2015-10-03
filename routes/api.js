@@ -1,5 +1,3 @@
-var http = require('http');
-var https = require('https');
 var request = require('sync-request');
 var xml2js = require('xml2js');
 var express = require('express');
@@ -7,6 +5,48 @@ var router = express.Router();
 
 router.get('/', function(req, res, next) {
   res.send(':)');
+});
+
+router.get('/search/:query', function(req, res, next) {
+  var url = "https://itunes.apple.com/search?media=podcast&term=" + req.params.query;
+
+  var json = {
+    status: 200,
+    total: 0,
+    podcasts: []
+  };
+
+  var result = request('GET', url);
+
+  if(result.statusCode == 200) {
+    var body = JSON.parse(result.getBody());
+
+    if(body && body.resultCount && body.resultCount > 0) {
+        body.results.forEach(function(elem, ind) {
+          var podcast = {
+            id: elem.collectionId,
+            thumb: elem.artworkUrl100,
+            name: elem.collectionName,
+            author: elem.artistName
+          };
+
+          json.podcasts[ind] = podcast;
+        });
+
+        json.total = body.resultCount;
+    } else {
+      json = {
+        status: 400
+      };
+    }
+  } else {
+    json = {
+      status: 400
+    };
+  }
+
+  res.setHeader('Content-Type', 'application/json');
+  res.send(json);
 });
 
 router.get('/highlights/:country/:limit', function(req, res, next) {
@@ -225,136 +265,6 @@ router.post('/podcast_release', function(req, res, next) {
 
   res.setHeader('Content-Type', 'application/json');
   res.send(json);
-});
-
-router.post('/', function(req, res, next) {
-  var url = req.body.url.replace('https', 'http');
-
-  http.get(url, function(response) {
-    var xml = '';
-
-    response.on('data', function(data) {
-      xml += data;
-    });
-
-    response.on('end', function() {
-      var parser = new xml2js.Parser();
-
-      parser.parseString(xml, function(err, result) {
-        var json = {
-          status: 200,
-          total: 0,
-          last_release: '',
-          episodes: []
-        };
-
-        if(result.rss.channel[0].item) {
-          json.total = result.rss.channel[0].item.length; 
-
-          if(result.rss.channel[0].item[0].pubDate[0]) {
-            var date = new Date(result.rss.channel[0].item[0].pubDate[0]);
-            json.last_release = date.getTime();
-          } else {
-            json.last_release = null;
-          }
-          
-          for(var i = 0; i < json.total; i++) {
-            episode = {
-              title: '',
-              description: '',
-              date: '',
-              duration: '',
-              mp3: '',
-              size: ''
-            }
-
-            if(result.rss.channel[0].item[i].title) {
-              episode.title = result.rss.channel[0].item[i].title[0];
-            } else {
-              episode.title = null;
-            }
-
-            if(result.rss.channel[0].item[i].description) {
-              episode.description = result.rss.channel[0].item[i].description[0];
-            } else {
-              episode.description = null;
-            }
-
-            if(result.rss.channel[0].item[i].pubDate) {
-              episode.date = result.rss.channel[0].item[i].pubDate[0];
-            } else {
-              episode.date = null;
-            }
-
-            if(result.rss.channel[0].item[i]['itunes:duration']) {
-              episode.duration = result.rss.channel[0].item[i]['itunes:duration'][0];
-            } else {
-              episode.duration = null;
-            }
-
-            if(result.rss.channel[0].item[i]['enclosure']) {
-              if(result.rss.channel[0].item[i]['enclosure'][0].$.url) {
-                episode.mp3 = result.rss.channel[0].item[i]['enclosure'][0].$.url;
-              } else {
-                episode.mp3 = null;
-              }
-
-              if(result.rss.channel[0].item[i]['enclosure'][0].$.length) {
-                episode.size = result.rss.channel[0].item[i]['enclosure'][0].$.length;
-              } else {
-                episode.size = '0';
-              }
-            } else {
-              episode.mp3 = null;
-              episode.size = '0';
-            }
-
-            json.episodes[i] = episode;
-          }
-        }
-
-        res.setHeader('Content-Type', 'application/json');
-
-        res.send(json);
-      });
-    });
-  });
-});
-
-router.post('/last_release', function(req, res, next) {
-  var url = req.body.url.replace('https', 'http');
-
-  http.get(url, function(response) {
-    var xml = '';
-
-    response.on('data', function(data) {
-      xml += data;
-    });
-
-    response.on('end', function() {
-      var parser = new xml2js.Parser();
-
-      parser.parseString(xml, function(err, result) {
-        var json = {
-          status: 200,
-          last_release: ''
-        };
-
-        if(result.rss.channel[0].item) {
-          if(result.rss.channel[0].item[0].pubDate[0]) {
-            var date = new Date(result.rss.channel[0].item[0].pubDate[0]);
-            json.last_release = date.getTime();
-          } else {
-            json.last_release = null;
-          }
-        }
-
-        res.setHeader('Content-Type', 'application/json');
-
-        res.send(json);
-      });
-    });
-  });
 });
 
 module.exports = router;
