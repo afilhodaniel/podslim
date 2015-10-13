@@ -69,7 +69,7 @@ router.get('/highlights/:country/:limit', function(req, res, next) {
       body.feed.entry.forEach(function(elem, ind) {
         var podcast = {
           id: elem.id.attributes['im:id'],
-          thumb: elem['im:image'][1].label,
+          thumb: elem['im:image'][2].label,
           name: elem['im:name'].label,
           author: elem['im:artist'].label
         };
@@ -112,7 +112,7 @@ router.get('/podcast/:country/:id', function(req, res, next) {
 
     if(body.resultCount && body.resultCount > 0) {
       json.id = body.results[0].collectionId;
-      json.thumb = body.results[0].artworkUrl60;
+      json.thumb = body.results[0].artworkUrl100;
       json.name = body.results[0].collectionName;
       json.author = body.results[0].artistName;
       json.category = body.results[0].primaryGenreName;
