@@ -267,4 +267,28 @@ router.post('/podcast_release', function(req, res, next) {
   res.send(json);
 });
 
+router.post('/check_feed', function(req, res, next) {
+  var json = {
+    status: 200,
+    check: false
+  };
+
+  var result = request('GET', req.body.url);
+
+  if(result.statusCode == 200) {
+    new xml2js.Parser().parseString(result.getBody(), function(err, xml) {
+      if(xml && xml.rss && xml.rss.channel && xml.rss.channel.length > 0) {
+        json.check = true;
+      }
+    });
+  } else {
+    json = {
+      status: 400
+    };
+  }
+
+  res.setHeader('Content-Type', 'application/json');
+  res.send(json);
+});
+
 module.exports = router;
