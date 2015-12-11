@@ -291,4 +291,10 @@ router.post('/check_feed', function(req, res, next) {
   res.send(json);
 });
 
+router.get('/episode/:description', function(req, res, next) {
+  res.render('episode', {
+    description: req.params.description
+  });
+});
+
 module.exports = router;
